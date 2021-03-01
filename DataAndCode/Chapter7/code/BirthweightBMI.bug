@@ -1,0 +1,24 @@
+model{
+# Likelihood
+   for(i in 1:n){
+      Y[i]   ~ dnorm(mu[i],inv.var)
+      mu[i] <- beta[1] + beta[2]*Male[i] + 
+         beta[3]*(BirthWeeks[i] - mean.BirthWeeks) + 
+         beta[4]*(BMI[i] - mean.BMI)
+   }
+# Predictions
+   for (i in 1:n.New){
+      NewMu[i] <- beta[1] + beta[2]*NewMale[i] +
+         beta[3]*(NewBirthWeeks[i] - mean.BirthWeeks) +
+         beta[4]*(NewBMI[i] - mean.BMI)
+      NewY[i] ~ dnorm(NewMu[i], inv.var)
+   }
+# Prior for beta
+   beta[1] ~ dnorm(3000, 0.0001)
+   for(j in 2:4){
+      beta[j] ~ dnorm(0,0.0001)
+   }
+# Prior for the inverse variance
+   inv.var   ~ dgamma(0.001, 0.001)
+   sigma     <- 1/sqrt(inv.var)
+}

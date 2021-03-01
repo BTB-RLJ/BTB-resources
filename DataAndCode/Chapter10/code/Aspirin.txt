@@ -1,0 +1,14 @@
+model{
+	for (i in 1:N) {
+		mu[i] <- b0 + b1*(T0[i] - meanT0)
+		Y[i] ~ dnorm(mu[i], tau[i])
+		tau[i] <- 1 / (sigma2 / lambda[i])
+		lambda[i] ~ dgamma(nu.2, 0.5)
+	}
+	b0 ~ dnorm(0.0, .1)
+	b1 ~ dnorm(0.0, .1)
+	Precision ~ dgamma(0.001, 0.001)
+	sigma2 <- 1 / Precision
+	StDev <- sqrt(sigma2)
+	nu.2 <- nu/2
+}

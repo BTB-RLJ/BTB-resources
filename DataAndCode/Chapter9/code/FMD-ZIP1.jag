@@ -1,0 +1,28 @@
+#Zero inflated Poisson Model
+model {
+   for (i in 1:66)  { 
+      sSize[i] <- (Size[i] - mean(Size[]))/sd(Size[])
+      z[i]  ~ dbern(pi[i])  # Model the observed zeros
+      logit(pi[i]) <- g[1] + g[2]*East[i] + g[3]*sSize[i]
+#  Model the non-zero counts
+      FMD[i] ~ dpois(llambda[i])
+      llambda[i] <- z[i]*0 + (1-z[i])*lambda[i]
+#  When llambda = 0, rate = 0; no cont. to likelihood
+      log(lambda[i]) <- b[1] + b[2]*East[i] + b[3]*sSize[i] 
+#  Pearson resids
+      E[i] <- z[i]*pi[i] + (1-z[i])*lambda[i]
+      PR[i] <-  (FMD[i] -E[i])/sqrt(E[i])
+      pp[i] <- pow(PR[i],2)  
+   } # Prob of zero for West and for West for ave Size
+   logit(q[1]) <- g[1]
+   logit(q[2]) <- g[1] + g[2]
+   for (j in 1:3) {
+      b[j] ~ dunif(-5,5)
+      g[j] ~ dunif(-5,5)
+   }
+   Pearson <- sum(pp[])  # Goodness of fit
+   for (i in 1:3) {
+      prob[i] <- step(b[i])
+      pr[i] <- step(g[i])
+   }
+}

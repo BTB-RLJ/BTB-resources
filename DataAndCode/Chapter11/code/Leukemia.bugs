@@ -1,0 +1,19 @@
+model
+{
+ for(i in 1:n[1]){t1[i] ~ dexp(theta1)}
+ for(i in 1:n[2]){t2[i] ~ dexp(theta2)}
+ theta1 ~ dgamma(a1,b1)
+ theta2 ~ dgamma(a2,b2)
+ median1 <- log(2)/theta1
+ median2 <- log(2)/theta2
+ relmedian <- theta2/theta1
+ S[1] <- exp(-24*theta1)
+ S[2] <- exp(-24*theta2)
+ Sdiff <- S[1]-S[2]
+}
+list(n=c(17,16),
+a1=, a2=, b1=, b2=, #From Example 11.xx or approximate Jeffreys
+t1=c(65,156,100,134,16,108,121,4,39,143,56,26,22,1,1,5,65),
+t2=c(56,65,17,7,16,22,3,4,2,3,8,4,3,30,4,43))
+list(theta1=0.05,theta2=0.02)
+

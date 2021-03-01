@@ -1,0 +1,39 @@
+model {  # logit link for the data
+   for (i in 1:2) {
+     y[i] ~ dbin(theta[i],n[i])
+     logit(theta[i]) <- beta[1] + beta[2]*High[i]
+   }  # Induced prior on reg coeffs
+   for (i in 1:2) {
+      tildetheta[i] ~ dbeta(a[i],b[i])
+   }
+   beta[1]<-Xtinv[1,1]*logit(tildetheta[1])+Xtinv[1,2]*logit(tildetheta[2])
+   beta[2]<-Xtinv[2,1]*logit(tildetheta[1])+Xtinv[2,2]*logit(tildetheta[2])
+#  Have specified logistic model and induced prior on beta.
+#  This will get us posterior samples from the LR model
+
+#  Now specify probabilities under cloglog model
+   for (i in 1:2) {
+      cloglog(thetastar[i]) <- beta[1]+beta[2]*High[i]
+
+#  Now give terms that go into log lik ratio
+#  We take logs for computational reasons, and exponentiate later
+#  comparing cloglog in numerator to logistic in denominator
+      v[i] <- y[i]*(log(thetastar[i])-log(theta[i]))
+                 + (n[i]-y[i])*(log(1-thetastar[i])-log(1-theta[i]))
+   }
+
+#  Finally, give corresponding log of prior ratio
+   for (i in 1:2) {
+      cloglog(tildethetastar[i]) <- beta[1] + beta[2]*High[i]
+      logit(tttildetheta[i]) <- beta[1] + beta[2]*High[i]
+      u[i] <- (a[i]-1)*log(tildethetastar[i])
+                - a[i]*log(tttildetheta[i])
+                + b[i]*(log(1-tildethetastar[i])
+                - log(1-tttildetheta[i]))
+                + beta[1]+ beta[2]*High[i]
+   }
+   wstar1 <- sum(v[ ])
+   wstar2 <- sum(u[ ])
+   w <- exp(wstar1+wstar2) # This gives p(data|M1)/p(data|M2)
+}
+
