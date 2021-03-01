@@ -1,0 +1,62 @@
+model { 
+# LR model for the data with sAge
+# LE[i] = indicator of lymphedema for ith woman
+# Nexam[i] = number of lymph notes examined
+# Met[i] = indicator of metastasis in lymph node
+# Age[i] = age of ith woman
+  for (i in 1:1210)  {
+    LE[i] ~ dbern(p[i])
+    logit(p[i]) <- beta[1] +
+    beta[2]*step(Nexam[i] -6)  # This dichotomizes Nexam
+              + beta[3]*Met[i] +
+    beta[4]*(Age[i] -mean(Age[]))/sd(Age[])   
+  }
+
+# Prior
+  for (i in 1:4) {beta[i] ~ dflat()  } # Flat prior on beta
+
+# 
+  OR[1] <- exp(beta[2])  
+  OR[2] <- exp(beta[3])
+  OR[3] <- exp(beta[4])
+
+# Probabilities of LE corresponding to ave Age, 72.7
+  PrLE[1] <- exp(beta[1]+beta[2] + beta[3])/
+              (1+ exp(beta[1] +beta[2]+ beta[3]))# (High,Met)
+  PrLE[2] <- exp(beta[1] + beta[3])/
+              (1+ exp(beta[1] + beta[3])) #M-L
+  RR[1] <- PrLE[1]/PrLE[2] #Effect of H/L for Met
+  PrLE[3] <- exp(beta[1]+beta[2])/
+              (1+ exp(beta[1] +beta[2])) #(No Met,H)
+  PrLE[4] <- exp(beta[1])/(1+ exp(beta[1]))# (No Met,Low)
+  RR[2] <- PrLE[3]/PrLE[4] # Effect of H/L for No Met
+
+# Probabilities of LE Corresponding to Age 78.3
+  PrLE[5] <- exp(beta[1]+beta[2] + beta[3] + beta[4])/
+              (1+ exp(beta[1] +beta[2] + beta[3] + beta[4]))#(Met,High)
+  PrLE[6] <- exp(beta[1]+beta[3] + beta[4])/
+              (1+ exp(beta[1] +beta[3]+ beta[4])) # (Met,Low)
+  RR[3] <- PrLE[5]/PrLE[6] # Effect of H/L for Met
+
+  PrLE[7] <- exp(beta[1]+beta[2] + beta[4])/
+               (1+ exp(beta[1] +beta[2]+ beta[4])) # (No Met,High)
+  PrLE[8] <- exp(beta[1] + beta[4])/
+              (1+ exp(beta[1] + beta[4])) # (No Met,Low)
+  RR[4] <- PrLE[7]/PrLE[8] # Effect of H/L for No-Met
+
+  prob[1] <- step(beta[2])  
+  prob[2] <- step(beta[3] )
+  prob[3] <- step(beta[4])                  
+}
+
+list(beta = c(0,0,0,0))
+LE[]Nexam[] Met[] Age[]
+1	  24	0	67
+0	   1	0	70
+0	   1	1	75
+0	   2	0	67
+0	  11	0	73
+0	   0	0	67
+...
+END
+

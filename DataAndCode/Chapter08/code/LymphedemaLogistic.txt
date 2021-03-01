@@ -1,0 +1,19 @@
+model {
+   for (i in 1:2)  {
+      Le[i] ~ dbin(p[i],n[i])
+      logit(p[i]) <- beta[1] + beta[2]*High[i]
+   }
+# Prior on the theta's
+   for (i in 1:2) {
+      theta[i] ~ dunif(0,1)
+   }
+ # Relate regression parameters to the theta's
+   beta[1] <- logit(theta[2])
+   beta[2] <- logit(theta[1]) - beta[1]
+# Candy
+   OR <- exp(beta[2])
+   RR <- theta[1]/theta[2]
+   RD <- theta[1] - theta[2]
+   prob[1] <- step(beta[2])
+}
+

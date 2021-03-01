@@ -1,0 +1,34 @@
+model {
+   for (i in 1:10) { 
+      y[i] ~ dpois(llambda[i])
+      log(llambda[i]) <- log(M[i]) + log(lambda[i])
+      lambda[i] <- exp(m[i] )
+      m[i]<-  beta[1]+beta[2]*S[i]+beta[3]*sA[i]+beta[4]*sAsq[i]
+                  + beta[5]*sA[i]*S[i] +beta[6]*sAsq[i]*S[i] 
+#  Define (Age - mean(Age))/sd(Age) and {(Age - mean(Age))/sd(Age)}^2
+      sA[i] <- (A[i] -mean(A[]))/sd(A[])
+      sAsq[i] <- pow((A[i] - mean(A[]))/sd(A[]),2)
+   }
+#  Partial prior specification with Age = 3 (average); (i) Smoke =0 and (ii) S=1 
+#  prior guess for lam1 = 50 and for lam2 = 80; upper limits are 100/150
+   b10  <- log(50)
+   sig10 <- (log(100) - b10)/1.645
+   tau10 <- 1/pow(sig10,2)
+   b20 <-  log(80)
+   sig20 <- (log(150) - b20)/1.645
+   tau20 <- 1/pow(sig20,2)
+   lam[1] ~ dlnorm(b10, tau10)
+   lam[2] ~ dlnorm(b20, tau20)
+   for (i in 3:6) {
+      beta[i] ~ dunif(-10,10)
+   }  
+   beta[1] <-   log(lam[1])
+   beta[2] <- log(lam[2]) - beta[1]
+   for (i in 1:5) {
+     RR[i] <- lambda[i] /lambda[i+5]   # Risk Ratio (Rel Risk)
+     AR[i] <-  lambda[i] - lambda[i+5]     # Atributable Risk (Risk Diff)  
+   }
+}
+
+
+

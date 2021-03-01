@@ -1,0 +1,12 @@
+model {
+   y[1] ~ dpois(theta1)
+   y[2] ~ dpois(theta2)
+   theta1 <- theta[1]*M[1]
+   theta2 <- theta[2]*M[2]
+   theta[1] ~ dgamma(0.001,0.001)
+   theta[2] ~ dgamma(0.001,0.001)
+   RateRatio <- theta[1]/theta[2]
+   test <-  step(RateRatio-1)
+ }
+ list(y=c(123,299), M=c(46.524,145.159))
+ list(theta = c(1,1))

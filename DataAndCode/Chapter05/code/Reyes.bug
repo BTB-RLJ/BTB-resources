@@ -1,0 +1,11 @@
+model {
+   for (i in 1:2) {
+      x[i] ~ dbin(ttheta[i],n[i])
+      O[i] <- ttheta[i]/(1-ttheta[i])
+   }
+   ttheta[2] ~ dbeta(a,b)
+   delta ~ dnorm(mu, prec)
+   ttheta[1]<-
+     exp(delta)*ttheta[2]/(1-ttheta[2]*(1-exp(delta)))
+   OR <- O[1]/O[2]
+}
