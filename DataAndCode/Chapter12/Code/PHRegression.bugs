@@ -1,0 +1,75 @@
+#  WinBUGS code
+#  Proportional hazards regression model for leukemia data
+
+MODEL
+
+
+model{	
+# Set up the a[j]s
+#  d[1]=0; {d[j]: j = 2,...,k} are distinct death times if
+#  last observation is a death;  else, d[k] is last censored time
+#  Dimension of vector d is k
+ a[1] <- 0
+ for(i in 2:k){a[i] <- (d[i-1] + d[i])/2}
+ a[k+1] <- d[k] + (d[k] - d[k-1])/2
+ # d[j] is in (a[j], a[j+1]) j=2,...,k
+
+# Construct H[i,j] and N[i,j]
+ for(i in 1:n){
+   for(j in 1:k){
+     HH[i,j] <- step(y[i]-a[j])
+     H[i,j] <- HH[i,j]*(min(y[i],a[j+1])-a[j])
+     N[i,j] <- HH[i,j]*step(a[j+1]-y[i])*delta[i]
+# Equals 1 iff y[i] is in interval j and delta[i]=1
+   }
+ }
+# Likelihood Construction
+ for(i in 1:n){
+   mu[i] <-  beta[1]*(AGgroup[i])
+   for(j in 1:k){
+     N[i,j] ~ dpois(theta[i,j])
+     theta[i,j] <- exp(mu[i])*H[i, j]*lam[j]   
+   }
+ }
+# Prior for lambdas
+ lamm <-  (10000)*(0.01) # exp(-a[2]*0.01) = 0.995
+ lam[1] ~ dgamma(lamm,10000) # lam1 is "fixed" at 0.01
+ for(j in 2:k){  # prior on baseline hazard bits
+   f[j] <- w*(a[j+1]-a[j])
+   e[j] <- lamstar*f[j]
+   lam[j] ~ dgamma(e[j],f[j])
+ }
+ lamstar <- 0.05   #  Select value or set prior for lamstar
+#  lamstar ~ dgamma(a,ww)   a=0.05*ww    ww=0.01
+
+#  Inferences for survival functions
+ for(j in 1:k){
+   dH0[j] <- (a[j+1]-a[j])* lam[j]   # (H_0(a[j+1]) -  H_0(a[j]))
+# Survivor function at a[j+1] = exp{-H_0(a[j+1])exp(mu)}
+# Surv Fn for AG+ and AG- groups
+   S.pos[j] <- pow(exp(-sum(dH0[1:j])), exp(beta[1]))
+   S.neg[j] <- pow(exp(-sum(dH0[1:j])), 1)
+   S.diff[j] <- S.pos[j] - S.neg[j]
+ }
+#  Inferences for the HRs and prior on the betas
+ for(j in 1:1){
+   HR[j] <- exp(beta[j]) # relative hazard
+   beta[j] ~ dnorm(0,0.000001)
+ }
+}
+
+# Data.  All data are deaths; 22 distinct death times
+# AGgroup=1 for AG+ and is 0 for AG-
+list(n=33, k=23, w=0.01, 
+y=c(65,156,100,134,16,108,121,4,39,143,56,26,22,1,1,5,65, 
+    56,65,17,7,16,22,3,4,2,3,8,4,3,30,4,43),	
+AGgroup=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 
+         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+delta=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+d=c(0,1,2,3,4,5,7,8,16,17,22,26,30,39,43,
+    56,65,100,108,121,134,143,156))
+#  Initial Values.  23 lambdas and 1 beta
+list(beta=c(0), # lamstar = 0.05,
+lam=c(0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,
+      0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1) ) 
