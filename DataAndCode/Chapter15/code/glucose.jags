@@ -1,0 +1,20 @@
+model {  # GENERATE THE LIKELIHOOD
+   for (i in 1:n[1]) {
+      y[i] ~ dnorm(mu[1], tau[1]) }  
+      for (i in (n[1] +1):(n[1] + n[2])) {
+         y[i] ~ dnorm(mu[2], tau[2])
+      }
+# SPECIFY PRIORS
+   mu[1] ~ dnorm( 100, 0.001)
+   mu[2] ~ dnorm( 250, 0.0001)
+   tau[1] ~ dgamma(.1,.1)
+   tau[2] ~ dgamma(.1,.1)
+   z[1] ~ dnorm(mu[1], tau[1]) 
+   z[2] ~ dnorm(mu[2], tau[2]) 
+# TRANSFORM BACK TO SIGMAS
+   for (l in 1:2) {
+      sigma[l] <- 1/sqrt(tau[l] )  
+   }
+# GET POSTERIOR FOR AUC
+   AUC<- phi( (mu[2] - mu[1] )/sqrt(pow(sigma[1],2) +pow(sigma[2],2) ) )
+}

@@ -1,0 +1,65 @@
+library(rstan)
+library(rjags)
+library(coda)
+library(ggmcmc)
+
+options(mc.cores = parallel::detectCores()) # Allows Stan to use multiple cores
+
+data <- list(n= c(198, 88),
+             y=c(82, 112,  82,  80, 121, 108, 107, 103, 156, 109,  96, 111, 128, 173, 117,  93,  79, 116, 102, 104, 114, 146, 101, 115, 105, 105, 142,  96,  93, 140, 120, 141, 137, 100, 102, 107, 207, 109,  87, 104, 119, 101, 118, 107, 130, 110,  96,  95, 133,  97,  92,  89, 100,  91, 127, 122, 113, 113,  81,  76,  85,  93, 107,98, 114, 126,  88, 105, 133, 100, 116, 120, 107,  75, 104, 110, 124, 275,  79, 111,  85,  85,  99,  72,136,  86,  99,  81,  87,  78,  97,  83,  88,  92, 102, 100, 109, 108,  86,  84,  95,  99, 100,  70,  78, 87,  76,  88,  74,  89, 109, 118, 106, 110,  74,  81, 145,  71,  85,  86, 109,  96,  74,  72,  57, 182, 90,  90,  84,  72,  83,  84,  96, 103, 108,  90,  66,  90,  97, 131, 239,  91,  88,  77, 104,  87, 100, 79,  77, 213,  91,  74,  86, 151,  82, 116,  88,  79,  78,  90,  88,  74, 103,  76,  91,  75,  80,  92, 78, 105,  96,  92, 107,  88,  63,  96,  87,  82,  80,  70,  84,  95,  82,  99,  84,  92,  84,  99,  77, 75,  65, 122,  77, 137,  80,  72,  79, 107, 87, 132, 113, 207, 186, 272, 250, 149, 198, 299, 190, 134, 183, 345, 373, 439, 306, 222, 274, 207, 110, 283, 244, 278, 229, 297, 345, 158, 154, 217, 291, 110, 232, 314, 272, 113, 130, 183, 133, 115, 169, 219,223, 153, 445, 249, 165, 407, 229, 432, 109, 175, 270, 106, 150, 330,  82, 106, 232, 189, 112, 104, 108,91, 189, 139,  91,  88, 282, 340, 238, 330, 374, 484, 396, 370, 173, 100, 156,  89,  80, 116, 139, 227, 124, 215, 119, 210))
+             
+inits <- function(){
+	list(mu=c(rnorm(1, 100, 5), rnorm(1, 250, 10)), tau=rgamma(2, 1,1))
+}
+
+jags_model <- jags.model(file = "glucose-regression.jags", data = data, inits = inits,
+                         n.chains = 3)
+
+ndraws <- 6000
+burnin <- 2000
+update(jags_model, burnin)
+
+jags_output <- coda.samples(jags_model,
+                            variable.names = c('mu', 'AUC', 'sigma'),
+                            n.iter=ndraws)
+                            
+jags_df <- ggs(jags_output)
+
+### Can check convergence
+ggs_traceplot(jags_df) + facet_wrap(~Parameter, scales = "free_y")
+
+jags_df %>%
+    group_by(Parameter) %>%
+    summarize(mean = mean(value),
+              sd = sd(value),
+              `2.5%` = quantile(value, .025),
+              median = median(value),
+              `97.5%` = quantile(value, .975))
+
+### Now stan
+stan_fit <- stan(file = 'glucose-regression.stan', data = data, chains = 3,
+				iter = 10000, warmup = 4000,
+                init = inits)
+                 
+stan_df <- ggs(stan_fit) %>%
+    filter(Parameter %in% c('mu[1]', 'mu[2]', 'AUC', 'sigma[1]', 'sigma[2]'))
+
+### Can check convergence
+ggs_traceplot(stan_df) + facet_wrap(~Parameter, scales = "free_y")
+
+stan_df %>%
+    group_by(Parameter) %>%
+    summarize(mean = mean(value),
+              sd = sd(value),
+              `2.5%` = quantile(value, .025),
+              median = median(value),
+              `97.5%` = quantile(value, .975))
+
+df <- bind_rows(mutate(jags_df, sampler = "JAGS"),
+                mutate(stan_df, sampler = "STAN"))
+ggplot(df, aes(x = value, color = sampler)) +
+    geom_line(stat = "density") +
+    facet_wrap(~Parameter, scales = "free")
+
+
+

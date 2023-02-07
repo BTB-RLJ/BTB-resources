@@ -1,0 +1,11 @@
+model{  
+    y[1:3] ~ dmulti(p[1:3],n)
+    p[1] <- pi*se 
+    p[2] <- (1-pi)*(1-sp)
+    p[3] <-  pi*(1-se) + (1-pi)*sp
+    pi ~ dbeta(a,b)   
+    se ~ dbeta(a1,b1)
+    sp ~ dbeta(a2,b2)
+    ppv <- p[1]/(1-p[3]) 
+    pdgneg <- pi*(1-se)/p[3]
+}

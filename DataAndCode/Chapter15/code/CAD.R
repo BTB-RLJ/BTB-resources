@@ -5,27 +5,30 @@ library(ggmcmc)
 
 options(mc.cores = parallel::detectCores()) # Allows Stan to use multiple cores
 
-data <- list(y = c(64, 309,3122183 ), n= 3122556,
-             a = 15, b = 94092,
-             a1 = 142, b1 = 2,
-             a2 = 1363, b2 = 3)
-             
+y = c(815, 115, 208, 327)
+n = sum(y)
+aSe = bSe = 1
+aSp = bSp = 1
+aPi = bPi = 1
+
+data <- list(n=n, y = y, aSe=aSe, bSe=bSe, aSp=aSp, bSp=bSp, aPi=aPi, bPi=bPi)
+
 inits <- function(){
-	list(pi=runif(1, 0.1, 0.6), se=runif(1, 0.4, 0.9), sp=runif(1, 0.4, 0.9))
+	list(Se = runif(1, 0.25, 0.75), Sp = runif(1, 0.25, 0.75),  pi = runif(1, 0.25, 0.75))
 }
-             
-jags_model <- jags.model(file = "HIV.jags", data = data, inits = inits,
+
+jags_model <- jags.model(file = "CAD.jags", data = data, inits = inits,
                          n.chains = 3)
 
-ndraws <- 8000
-burnin <- 4000
+ndraws <- 5000
+burnin <- 1000
 
 update(jags_model, burnin)
 
 jags_output <- coda.samples(jags_model,
-                            variable.names = c('se', 'sp', 'pi', 'ppv', ' pdgneg'),
+                            variable.names = c('pi', 'Se', 'Sp'),
                             n.iter=ndraws)
-
+                            
 jags_df <- ggs(jags_output)
 
 ### Can check convergence
@@ -40,16 +43,15 @@ jags_df %>%
               `97.5%` = quantile(value, .975))
 
 ### Now stan
-stan_fit <- stan(file = 'HIV.stan', data = data, chains = 3,
-				iter = 8000, warmup = 5000,
-                init = inits)
-
+stan_fit <- stan(file = 'CAD.stan', data = data, chains = 3,
+                 init = inits)
+                 
 stan_df <- ggs(stan_fit) %>%
-    filter(Parameter %in% c('se', 'sp', 'pi', 'ppv', 'pdgneg'))
+    filter(Parameter %in% c('pi', 'Se', 'Sp'))
 
 ### Can check convergence
 ggs_traceplot(stan_df) + facet_wrap(~Parameter, scales = "free_y")
-    
+
 stan_df %>%
     group_by(Parameter) %>%
     summarize(mean = mean(value),
@@ -57,7 +59,7 @@ stan_df %>%
               `2.5%` = quantile(value, .025),
               median = median(value),
               `97.5%` = quantile(value, .975))
-              
+
 df <- bind_rows(mutate(jags_df, sampler = "JAGS"),
                 mutate(stan_df, sampler = "STAN"))
 ggplot(df, aes(x = value, color = sampler)) +
