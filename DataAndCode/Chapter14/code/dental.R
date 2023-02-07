@@ -19,7 +19,7 @@ inits = function(){
 	list(beta=rnorm(3, 0, 1), sig=runif(1, 0.5, 2.0), sigg=runif(2,0.5,2.0), rhog = runif(1, 0.0, 0.5))
 }
 
-jags_model <- jags.model(file = "dental.txt", data = data, inits=inits,
+jags_model <- jags.model(file = "dental.jags", data = data, inits=inits,
                          n.chains = 3)
 
 ndraws <- 5000
@@ -54,8 +54,8 @@ stan_df <- ggs(stan_fit) %>%
 ### Check convergence
 ggs_traceplot(stan_df) + facet_wrap(~Parameter, scales = "free_y")
 
-### Check poor sampling and divergent transitions
-pairs(stan_fit, pars=c('beta[1]', 'beta[2]', 'beta[3]',
+### Can check sampling and divergent transitions
+# pairs(stan_fit, pars=c('beta[1]', 'beta[2]', 'beta[3]',
                             'sig', 'sigg[1]', 'sigg[2]', 'rhog'))
 
 stan_df %>%
@@ -69,36 +69,5 @@ stan_df %>%
 Results <- bind_rows(mutate(jags_df, sampler = "JAGS"),
                 mutate(stan_df, sampler = "STAN"))
 ggplot(Results, aes(x = value, color = sampler)) +
-    geom_line(stat = "density") +
-    facet_wrap(~Parameter, scales = "free")
-
-### Stan with centered hierarchical model
-stan_fit2 <- stan(file = 'dental2.stan', data = data, chains = 3, 
-				iter = 10000, warmup = 5000,
-                init = inits)
-
-stan_df2 <- ggs(stan_fit2) %>%
-    filter(Parameter %in% c('beta[1]', 'beta[2]', 'beta[3]',
-                            'sig', 'sigg[1]', 'sigg[2]', 'rhog'))
-
-### Check convergence
-ggs_traceplot(stan_df) + facet_wrap(~Parameter, scales = "free_y")
-
-### Check poor sampling and divergent transitions
-pairs(stan_fit2, pars=c('beta[1]', 'beta[2]', 'beta[3]',
-                            'sig', 'sigg[1]', 'sigg[2]', 'rhog'))
-
-stan_df2 %>%
-    group_by(Parameter) %>%
-    summarize(mean = mean(value),
-              sd = sd(value),
-              `2.5%` = quantile(value, .025),
-              median = median(value),
-              `97.5%` = quantile(value, .975))
-
-Results2 <- bind_rows(mutate(jags_df, sampler = "JAGS"),
-                mutate(stan_df, sampler = "STAN"),
-                mutate(stan_df2, sampler = "STAN2"))
-ggplot(Results2, aes(x = value, color = sampler)) +
     geom_line(stat = "density") +
     facet_wrap(~Parameter, scales = "free")
