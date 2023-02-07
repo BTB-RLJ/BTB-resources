@@ -22,7 +22,7 @@ inits = function() {
 }
 
 data <- list(N=n.ID, logy = log(ILmatrix)) # Fit logarithms of IL-1beta values
-jags_model <- jags.model(file = "Ch-14-interleukin-CSAR.jags", data = data, n.chains = 3)
+jags_model <- jags.model(file = "Interleukin-CSAR.jags", data = data, n.chains = 3)
 
 ndraws <- 10000
 burnin <- 6000
@@ -45,7 +45,7 @@ jags_df %>%
               `97.5%` = quantile(value, .975))
               
 ### Now stan
-stan_fit <- stan(file = 'Ch14-interleukin-CSAR.stan', data = data, chains = 3, iter=10000, warmup=6000,
+stan_fit <- stan(file = 'Interleukin-CSAR.stan', data = data, chains = 3, iter=10000, warmup=6000,
                                   init = inits)
 
 stan_df <- ggs(stan_fit) %>%
