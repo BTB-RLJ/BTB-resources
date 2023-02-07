@@ -20,7 +20,7 @@ inits = function(){
 	list(beta=rnorm(4, 0, 1), sigmag=runif(1, 0.5, 2.0))
 }
 
-jags_model <- jags.model(file = "CowAbortion.txt", data = data,
+jags_model <- jags.model(file = "CowAbortion.jags", data = data,
                          n.chains = 3, inits = inits)
 
 ndraws <- 3000
