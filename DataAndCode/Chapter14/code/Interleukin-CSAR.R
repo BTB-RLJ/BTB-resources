@@ -12,7 +12,7 @@ n.ID = length(u.ID)
 
 #	Convert data to matrix format for autoregression program
 ILmatrix = matrix(NA, nrow=n.ID, ncol=6)
-#	Put data in matrix format for Wes's program
+#	Put data in matrix format for program
 for (i in 1:n.ID) {
 	ILmatrix[i,] = ILdata[ILdata[,1]==u.ID[i],2]
 }
