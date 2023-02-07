@@ -19,7 +19,7 @@ inits = function(){
 	list(beta=rnorm(4, 0, 1), gamma=rnorm(data$nID, 0, 0.5), gamma_sd=runif(1, 0.5, 2.0))
 }
 
-jags_model <- jags.model(file = "Toenail.txt", data = data,
+jags_model <- jags.model(file = "Toenail.jags", data = data,
                          n.chains = 3, inits = inits)
 
 ndraws <- 4000
