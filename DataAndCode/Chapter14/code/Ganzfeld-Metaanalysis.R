@@ -14,8 +14,7 @@ inits = function(){
 	list(mu=rnorm(1, -1, 1))
 }
 
-# jags_model <- jags.model(file = "Ch14-Ganzfeld-Metaanalysis.txt", data = data, n.chains = 3)
-jags_model <- jags.model(file = "Ganzfeld-Metaanalysis.txt", data = data, n.chains = 3, inits = inits)
+jags_model <- jags.model(file = "Ganzfeld-Metaanalysis.jags", data = data, n.chains = 3, inits = inits)
 
 ndraws <- 8000
 burnin <- 5000
