@@ -22,7 +22,7 @@ inits = function() {
 }
 
 data <- list(N=n.ID, logy = log(ILmatrix)) # Fit logarithms of IL-1beta values
-jags_model <- jags.model(file = "Ch-14-interleukin-CSAR.jags.txt", data = data, n.chains = 3)
+jags_model <- jags.model(file = "Ch-14-interleukin-CSAR.jags", data = data, n.chains = 3)
 
 ndraws <- 10000
 burnin <- 6000
