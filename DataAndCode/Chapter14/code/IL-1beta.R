@@ -16,7 +16,7 @@ inits = function() {
 	list(beta1=rnorm(1, 0, 1), rhow=runif(1, 0.1, 0.9), sig=runif(1, 0.5, 1.5), sigg=runif(1, 0.5, 1.5), sigw=runif(1, 0.5, 1.5))
 }
 
-jags_model <- jags.model(file = "IL-1beta.txt", data = data,
+jags_model <- jags.model(file = "IL-1beta.jags", data = data,
                          n.chains = 3, inits = inits)
 
 ndraws <- 8000
