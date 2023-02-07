@@ -1,0 +1,26 @@
+#Meta-analysis of ganzfield studies
+#hierarchical model; binomial counts
+model{
+   for (i in 1:nstudy) {
+      w[i] ~dnorm(mu, taut)
+      theta[i] <- exp(w[i])/(1+ exp(w[i]))
+      y[i] ~ dbin(theta[i], n[i])
+   }
+   mu0 <- logit(theta0)
+   c <- pow((logit(u) - logit(theta0))/1.645, 2) + z
+   b <- 1/c
+   z ~ dunif(0,.0001)
+   sigmax <- (logit(thetamax) - logit(theta0))/1.28 + z
+   mu ~  dnorm(mu0, b)  # center med(theta) on mu0
+   taut  <- 1/pow(sigt,2)
+   sigt  ~ dunif(0, sigmax)
+   ninety <- exp(mu + 1.28*sigt)/(1 + exp(mu + 1.28*sigt))
+   ten <- exp(mu - 1.28*sigt)/(1 + exp(mu - 1.28*sigt))
+   med <- exp(mu)/(1+ exp(mu))
+   prob[1] <-  step(med - 0.25)
+   prob[2] <-  step(med - 0.28)
+   prob[3] <-  step(med - 0.3)
+   prob[4] <-  step(ten - 0.25)
+   prob[5] <-  step(ten - 0.28)
+   prob[6] <-  step(ten - 0.3)
+}

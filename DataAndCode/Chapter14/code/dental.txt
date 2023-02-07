@@ -1,0 +1,27 @@
+# Dental Data Analysis
+model {
+   for (i in 1:nObs) {
+      sAge[i] <- (Age[i] - 11)/2
+      dist[i] ~ dnorm(mu[i], tau)
+      mu[i] <- gam[ID[i],1] + beta[2]*sAge[i] + gam[ID[i],2]*sAge[i] + beta[3]*Male[i]  
+   }
+   for (i in 1:nID) {
+      gam[i, 1:2] ~ dmnorm(mu_g[1:2], Omega[1:2,1:2])
+   }
+   mu_g <- c(beta[1], 0)
+   Sigma[1,1] <- sigg[1] ^ 2
+   Sigma[2,2] <- sigg[2] ^ 2
+   Sigma[1,2] <- rhog * sigg[1] * sigg[2]
+   Sigma[2,1] <- Sigma[1,2]
+   Omega <- inverse(Sigma)
+   for(i in 1:3){ 
+        beta[i] ~ dnorm(0, 1 / 100)
+   }
+   sig ~ dunif(0, 10)
+   tau <- 1 / sig ^ 2
+   for(j in 1:2) {
+    sigg[j] ~ dunif(0, 10)
+   }
+   rhog ~ dunif(-1, 1)
+}
+

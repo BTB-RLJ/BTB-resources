@@ -1,0 +1,19 @@
+# IL1-beta data: Final
+model { 
+   for (i in 1:N) {
+      y[i] ~ dlnorm(gamm[i], tau)
+      gamm[i] <- gam[ID[i]]      
+      res[i] <- log(y[i]) - gamm[i] 
+   }    
+   for (i in 1:30) {
+      gam[i] ~ dnorm(beta, taug)  
+   }
+   beta ~ dnorm(0, .25)
+   prob <- ifelse(beta >= 0, 1, 0)
+   tau <- 1/pow(sig,2)   
+   sig ~ dunif(0,2)
+   taug <- 1/pow(sigg,2)    
+   sigg ~ dunif(0,2)
+   med <- exp(beta)
+   rho <- (1/taug)/(1/tau + 1/taug)
+}
