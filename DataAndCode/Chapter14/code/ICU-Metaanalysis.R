@@ -8,7 +8,7 @@ data <- list(m=14, LOR=ICU$LOR, se=ICU$se)
 
 inits <- list(mu=runif(1,0,1),sigmag=runif(1, 0.5, 1.5))
 
-jags_model <- jags.model(file = "Ch14-ICU-Metaanalysis.jags", data = data,
+jags_model <- jags.model(file = "ICU-Metaanalysis.jags", data = data,
                          n.chains = 3, inits = inits)
 
 ndraws <- 5000
@@ -32,7 +32,7 @@ jags_df %>%
 
 ### Now stan
 
-stan_fit <- stan(file = 'Ch14-ICU-Metaanalysis.stan', data = data, chains = 3, 
+stan_fit <- stan(file = 'ICU-Metaanalysis.stan', data = data, chains = 3, 
 				iter = 15000, warmup = 10000,
                 init = rep(list(inits), 3))
                 
