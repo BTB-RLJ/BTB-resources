@@ -1,0 +1,40 @@
+model {
+   for (i in 1:n[1]) {
+      y[i] ~ dnorm(mu0[i], tau[1]) 
+      mu0[i] <- b0[1] + b0[2]*( age[i]-mean(age[]) )/sd(age[]) 
+   }  
+   for (i in (n[1] +1):(n[1] + n[2])) {
+      y[i] ~ dnorm(mu1[i], tau[2]) 
+#      mu1[i] <- b1[1]      # Model 1 removes the slope for group 2
+      mu1[i] <- b1[1] + b1[2]*( age[i]-mean(age[]) )/sd(age[]) # Model 2 includes slope
+   }
+# SPECIFY PRIORS
+   b0[1] ~ dnorm( 0, 0.000001)
+   b0[2] ~ dnorm(0, 0.000001)
+   b1[1]  ~ dnorm( 0, 0.000001)
+   b1[2] ~ dnorm(0, 0.000001)
+   tau[1] ~ dgamma(.001,.001)
+   tau[2] ~ dgamma(.001,.001)
+# TRANSFORM BACK TO SIGMAS
+   for (l in 1:2) {
+      sigma[l] <- 1/sqrt(tau[l] )  
+   }
+   prob0 <- step(b0[2])
+   prob1 <- step(b1[2])  
+# Obtain AUC for two ages
+   x[1] <- 70
+   x[2] <- 40
+   for (i in 1:2) {
+#  For model 1 (without age slope in group 2)
+#      a[i] <- (  (b1[1] - b0[1]) +  
+#                  (0.0 - b0[2])*(x[i] - mean(age[]))/sd(age[]) ) /sigma[2]  
+#  For model 2 (with age slope in group 2)
+      a[i] <-(  (b1[1] - b0[1]) + 
+                   (b1[2] - b0[2])*(x[i] -mean(age[]))/sd(age[]) ) /sigma[2]  
+      c[i] <-  a[i]/sqrt(1 + pow(b,2))
+      AUC[i] <- phi(c[i])     
+   }     
+   b <- sigma[1]/sigma[2] 
+   diffAUC <- AUC[2] - AUC[1]  
+   probAUC <- step(diffAUC)  
+}
