@@ -1,0 +1,11 @@
+model{
+   for (i in 1:2) {
+      y[i] ~ dbin(theta[i],n[i])
+      theta[i] ~ dbeta(a[i],b[i])
+      odds[i] <- theta[i]/(1-theta[i])
+   }
+   RD <- theta[1]-theta[2] # High exposure - low exposure
+   RR <- theta[1]/theta[2]
+   OR <-  odds[1]/odds[2]
+   test <- step(RD)
+ }

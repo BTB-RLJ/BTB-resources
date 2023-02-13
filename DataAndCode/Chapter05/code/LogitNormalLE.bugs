@@ -1,0 +1,14 @@
+model {
+   for (i in 1:2) {
+      y[i] ~ dbin(theta[i],n[i])
+      theta[i] <- exp(beta[i])/(1+ exp(beta[i]))
+      beta[i] ~ dnorm(0,d)
+      odds[i] <- theta[i]/(1-theta[i])
+   }
+   RD <- theta[1]-theta[2]
+   RR <- theta[1]/theta[2]
+   OR <-  odds[1]/odds[2]
+   test <- step(RD)
+}
+list(n=c(477,734), y =c(126,53), d = 0.25)
+list(beta = c(0,0))

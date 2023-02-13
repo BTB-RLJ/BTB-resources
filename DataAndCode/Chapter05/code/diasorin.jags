@@ -1,0 +1,35 @@
+data{
+   for(i in 1:nL){
+      logLowTurnover[i] <- log(LowTurnover[i])
+   }
+   for(i in 1:nN){
+      logNormalTurnover[i] <- log(NormalTurnover[i])
+   }
+}
+model{
+   for(i in 1:nL){
+      logLowTurnover[i] ~ dnorm(muL, tauL) 
+   }
+   for(i in 1:nN){
+     logNormalTurnover[i] ~ dnorm(muN, tauN) 
+   }
+   sigmaN <- sqrt(1/tauN)      
+   sigmaL <- sqrt(1/tauL)
+   muL ~ dnorm(4.87, bL)       
+   muN ~ dnorm(5.39, bN)
+   Delta <- muN - muL
+   tauL ~ dgamma(c,d)          
+   tauN ~ dgamma(e,f)
+   medL <- exp(muL)            
+   medN <- exp(muN)
+   relmed <- medN /medL        
+   rsd <- sigmaL/sigmaN
+   test[1] <- step(rsd -1)     
+   test[2] <- step(relmed -1)
+ # Predictive Densities Low and Normal
+   pdLlog ~ dnorm(muL, tauL) # on log-measurement axis     
+   pdNlog ~ dnorm(muN, tauN) # on log-measurement axis
+   pdL ~ dlnorm(muL, tauL)   # on original measurement axis     
+   pdN ~ dlnorm(muN, tauN)   # on original measurement axis
+   AUC <- step(pdN - pdL)    # Area Under Curve
+}
