@@ -22,19 +22,19 @@ C0 <- Xtildeinv %*% D %*% t(Xtildeinv)
 C0inv <- solve(C0)
 a <- 1.73   # a and b are the hyperparameters of prior on tau
 b <- 0.78
-n <- length(FEV)   # Get the sample size, n
+n <- length(FEVdata$FEV)   # Get the sample size, n
 p <-  dim(Xtildeinv)[1]  # Number of regression coefficients
 # Create a list of all the inputs appearing in the BUGS code
-data <- list('n'=n, 'p'=p, 'beta0'=beta0, 'C0inv'=COinv,
-             'a'=a, 'b'=b, 'FEV'=FEV, 'Age'=Age, 'Smoke'=Smoke)
+data <- list('n'=n, 'p'=p, 'beta0'=beta0, 'C0inv'=C0inv,
+             'a'=a, 'b'=b, 'FEV'=FEVdata$FEV, 'Age'=FEVdata$Age, 'Smoke'=FEVdata$Smoke)
 
-# Identify all objects to monitor in MCMC program
+# Identify all objects one might want to monitor in MCMC program
 parameters <- c('beta','tau','meanFEVs','meanFEVns',
                  'RM','MD','FEV20s','FEV20ns')
 
 # Specify initial values for all stochastic nodes
 inits <- function(){
-	list(list(beta=rnorm(4, c(2.5,0,0,0), 1), tau=rgamma(1, 1, 1))
+	list(beta=rnorm(4, c(2.5,0,0,0), 1), tau=rgamma(1, 1, 1))
 }
 
 jags_model <- jags.model(file = "FEV.jags", data = data,
@@ -46,7 +46,8 @@ burnin <- 1000
 update(jags_model, burnin)
 
 jags_output <- coda.samples(jags_model,
-                            variable.names = parameters,
+                            variable.names = c('beta', 'sigma', 'FEV20s', 'FEV20ns', 'RM', 'MD'),
+#                            variable.names = parameters,
                             n.iter=ndraws)
 jags_df <- ggs(jags_output)
 

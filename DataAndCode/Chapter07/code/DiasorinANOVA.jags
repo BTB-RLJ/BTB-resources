@@ -1,0 +1,42 @@
+# Model data as log normal
+model {  #  First part is for analysis on log scale
+   for(i in 1:n[1]) {
+      low[i]~dlnorm(mu[1],tau)
+   }
+   for(i in 1:n[2]) {
+      normal[i]~dlnorm(mu[2],tau)
+   }
+   for(i in 1:n[3]) {
+      high[i]~dlnorm(mu[3],tau)
+   }
+# Prior specification
+   mu[1]~dnorm(4.87,347.12)
+   mu[2]~dnorm(5.39,357.42)
+   mu[3]~dnorm(6.40,166.67)
+   tau~dgamma(0.001,0.001)
+   sigma <- 1/sqrt(tau)
+# Test for ordering of medians
+   P <- step(mu[3]-mu[2])*step(mu[2]-mu[1])
+# Predictive densities for three future (log-scale) observations
+   lowf.ls~dnorm(mu[1],tau)
+   normalf.ls~dnorm(mu[2],tau)
+   highf.ls ~ dnorm(mu[3],tau)
+# Additional inferential objects
+   diff21 <- mu[2]-mu[1]
+   diff31 <- mu[3]-mu[1]
+   diff32 <- mu[3]-mu[2]
+   prob21 <- ifelse(diff21 < 0, 0 ,1)
+   prob31 <- ifelse(diff31 < 0, 0 ,1)
+   prob32 <- ifelse(diff32 < 0, 0 ,1)
+ # The following part is for analysis on original data scale
+   med[1] <- exp(mu[1])
+   med[2] <- exp(mu[2])
+   med[3] <- exp(mu[3])
+   relmed21 <- med[2]/med[1]
+   relmed31 <- med[3]/med[1]
+   relmed32 <- med[3]/med[2]
+ # Simulate predictive densities on untransformed scale
+   lowf <- exp(lowf.ls)
+   normalf <- exp(normalf.ls)
+   highf <- exp(highf.ls)
+}

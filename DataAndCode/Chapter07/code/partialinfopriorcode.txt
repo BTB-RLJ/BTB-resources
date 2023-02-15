@@ -1,0 +1,14 @@
+model{ 
+   for (i in 1:2) { 
+      tildem[i] ~ dnorm(m0[i],tau0[i]) 
+   }
+   for (j in 2:p) {
+      beta[j] ~ dnorm(0,0.000001)
+   }
+   beta[1] <- tildem[1]   
+   beta[2] <- tildem[2]-tildem[1]     
+}
+list(m0 = c(..),tau0= c(..), p = ) # Required "data" values
+list(tildem = c(...)) # Initial values for tildem
+
+
