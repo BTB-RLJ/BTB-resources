@@ -3,8 +3,11 @@ library(rjags)
 library(coda)
 library(ggmcmc)
 
+options(mc.cores = parallel::detectCores())  # Allows Stan to use multiple cores for parallel processing
 
 # Data
+trauma <- read.csv("../data/trauma.csv", header=TRUE)
+
 trauma <- read.table("http://people.oregonstate.edu/~calverta/BIDA/Chapter08/trauma300.txt",
                      header = TRUE)
 
@@ -22,16 +25,19 @@ data <- list(death = trauma$death, ISS = trauma$ISS,
              n=300, a=c(1.1,3,5.9,1.3,1.1,1.5), b=c(8.5,11,1.7,12,4.9,5.5),
              Xtinv = Xtinv)
 
-jags_model <- jags.model(file = "Trauma.txt", data = data,
+jags_model <- jags.model(file = "Trauma.jags", data = data,
                          n.chains = 3)
 
-ndraws <- 1000
-burnin <- 1000
+ndraws <- 3000
+burnin <- 5000
+
 update(jags_model, burnin)
+
 jags_output <- coda.samples(jags_model,
                             variable.names = c('beta'),
                             n.iter=ndraws)
 jags_df <- ggs(jags_output)
+
 jags_df %>%
     group_by(Parameter) %>%
     summarize(mean = mean(value),
@@ -41,8 +47,17 @@ jags_df %>%
               `97.5%` = quantile(value, .975))
 
 ### Now stan
-stan_fit <- stan(file = 'Trauma.stan', data = data, chains = 3)
+stan_fit <- stan(file = 'Trauma.stan', data = data, chains = 3, iter=8000, warmup=5000)
+
 stan_df <- ggs(stan_fit, family = "beta")
+
+stan_df %>%
+    group_by(Parameter) %>%
+    summarize(mean = mean(value),
+              sd = sd(value),
+              `2.5%` = quantile(value, .025),
+              median = median(value),
+              `97.5%` = quantile(value, .975))
 
 df <- bind_rows(mutate(jags_df, sampler = "JAGS"),
                 mutate(stan_df, sampler = "STAN"))

@@ -9,7 +9,7 @@ data <- list(y = c(8,5,3,0), n = c(8,8,8,8), sDose = c(6,2,0,-1))
 test <- glm(cbind(data$y, data$n - data$y) ~ data$sDose, family = "binomial")
 
 
-jags_model <- jags.model(file = "SnakeBite.txt", data = data,
+jags_model <- jags.model(file = "SnakeBite.jags", data = data,
                          n.chains = 3)
 
 ndraws <- 5000

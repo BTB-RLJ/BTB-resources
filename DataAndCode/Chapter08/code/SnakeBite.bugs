@@ -1,0 +1,24 @@
+model {
+   for (i in 1:4) { 
+      y[i] ~ dbin(p[i],n[i])
+      logit(p[i]) <- beta[1] + beta[2]*sDose[i] 
+   }
+   for (i in 1:2) { 
+      beta[i] ~ dunif(-10,10) 
+   }
+   ED50 <- (logit(0.5) - beta[1])/beta[2]
+
+#  The following code is used to modify the model
+# to use Uniform priors on the theta's
+# Note that we assume theta[2] < theta[1]
+# theta[1] <- expit( beta[1] ) 
+# expit(a) = e^a/(1+e^a)
+# theta[2] <- expit( beta[1] + beta[2]*2)
+# beta[1]  <- logit(theta[1])
+# beta[2] <- (logit(theta[2]) - beta[1])/2
+# theta[1] ~ dunif(0,1)
+# theta[2] ~ dunif(0,theta[1])
+}
+list(y = c(8,5,3,0), n = c(8,8,8,8), sDose = c(6,2,0,-1))
+list(beta = c(0,0))
+list(theta = c(0.5, 0.25)) # theta[2] < theta[1]
