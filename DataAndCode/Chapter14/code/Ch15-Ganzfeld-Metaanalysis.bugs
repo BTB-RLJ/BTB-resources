@@ -1,0 +1,94 @@
+#Meta-analysis of ganzfield studies
+#hierarchical model; binomial counts
+#priors elicited from Jessica in Jan 2008
+model{for (i in 1:57) {  w[i] ~dnorm(mu, taut)
+ theta[i] <- exp(w[i])/(1+ exp(w[i]))  
+ y[i] ~ dbin(theta[i], n[i] )      
+	}
+theta0 <- 0.25	 u <- 0.5		umax <- 0.8 		
+mu0 <- logit(theta0)
+b <- pow(1.645/(logit(u) - logit(theta0)),2) + z
+z ~ dunif(0,.0001)
+max <- (logit(umax) - logit(theta0))/1.28 +z
+mu ~  dnorm(mu0, b)	#center med(theta) on 0.33
+taut  <- 1/pow(sigt,2)
+sigt  ~ dunif(0, max)
+ninety <- exp(mu + 1.28*sigt)/(1 + exp(mu + 1.28*sigt) )
+ten <- exp(mu - 1.28*sigt)/(1 + exp(mu - 1.28*sigt) )
+med <- exp(mu)/(1+ exp(mu))
+prob[1] <-  step(med - 0.25)
+prob[2] <-  step(med - 0.28)
+prob[3] <-  step(med - 0.3)
+prob[4] <-  step(ten - 0.25)
+prob[5] <-  step(ten - 0.28)
+prob[6] <-  step(ten - 0.3)
+	}
+
+#inits
+list(mu = 0, sigt=.01)
+
+#data, n is number of ganzfeld studies included, num is number of trials in each study
+list(n=c(32, 7, 30, 30, 20, 10, 10, 28, 10, 20, 20, 100, 40, 27, 60, 
+48, 22, 9, 36, 50, 50, 50, 50, 6, 7, 50, 25, 50, 50, 50, 50, 
+51, 29, 128, 32, 50, 8, 40, 65, 50, 30, 30, 30, 30, 97, 22, 50, 
+32, 58, 46, 20, 30, 42, 32, 40, 36, 50))
+
+y[]
+14
+6
+13
+7
+2
+9
+4
+8
+4
+7
+12
+41
+13
+11
+27
+10
+8
+3
+10
+12
+18
+15
+12
+10
+3
+15
+16
+13
+12
+12
+9
+19
+12
+60
+13
+11
+3
+8
+24
+18
+11
+11
+14
+11
+32
+2
+13
+8
+11
+12
+6
+6
+5
+14
+16
+13
+NA
+END

@@ -1,0 +1,38 @@
+#  Model for the data that includes latent intercepts + GP
+model{
+   for (i in 1:N){ 
+      gam[i] ~ dnorm(beta[1], tau)
+      for (j  in 1:6){
+         y[i,j] ~ dlnorm( gamm[i,j], tau)
+         gamm[i,j] <- gam[i]  + w[i,j]
+         res[i,j] <- log(y[i,j]) - gamm[i,j]   # residuals
+      }
+   }
+#  Model for Gaussian Process with AR structure
+   for (k in 1:N){
+      w[k,1] ~ dnorm(0, precw)
+      for (l in 2:6){
+         ww[k,l] <- rhow*w[k,(l-1)]
+         w[k,l] ~ dnorm(ww[k,2], precw)
+      }
+   }
+#  Specify priors
+   rhow ~ dunif(0,1)    
+   precw <- tauw/(1-pow(rhow,2))
+   tauw <- 1/pow(sigw,2)   
+   sigw ~ dunif(0,2)
+   for (i in 1:1){ # Allow more regression coefficients
+      beta[i] ~ dnorm(0,.25)
+   }
+   tau <- 1/pow(sig,2)
+   sig ~ dunif(0,2)
+   taug <- 1/pow(sigg,2) 
+   sigg ~ dunif(0,2)
+#  Tenth, fiftieth and 90th percentiles
+   ninety[1] <- beta[1] + 1.28*sig 
+   ten[1] <- beta[1]  - 1.28*sig
+   ninety[2] <- exp(ninety[1])    ten[2] <- exp(ten[1])
+   med <- exp(beta[1])
+# Correlation between observations
+   rho <- (1/taug)/(1/tau + 1/taug)
+}

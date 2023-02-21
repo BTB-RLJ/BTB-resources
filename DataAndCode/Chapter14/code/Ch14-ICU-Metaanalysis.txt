@@ -1,0 +1,16 @@
+model{
+ for(i in 1:m){
+   LOR[i] ~ dnorm(theta[i], tau[i])
+   theta[i] ~ dnorm(mu, taug)
+   tau[i] <- 1/pow(se[i],2)     }
+mu ~ dunif(-2,2)   sigg ~ dunif(0,2) #dnorm(0, 0.001) 
+taug <- 1/pow(sigg,2) 
+ # Median of OR distribution
+ medOR <- exp(mu) prob <- step(medOR - 1)
+ # 20th and 80th percentiles of distribution of ORs
+ eightypct <- exp(mu + 0.84*sigg)
+ twentypct <- exp(mu - 0.84*sigg)
+# Predictive density of ORs
+ thetaf ~ dnorm(mu, taug)  ORf <- exp(thetaf)
+ for(i in 1:m){ OR[i] <- exp(theta[i]) }
+}

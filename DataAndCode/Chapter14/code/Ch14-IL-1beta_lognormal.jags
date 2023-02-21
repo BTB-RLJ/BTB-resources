@@ -1,0 +1,28 @@
+model{ 
+   for (i in 1:N){
+#      logy[i] ~ dnorm( gamm[i], tau) # Assumes y is NOT on the log scale
+      y[i] ~ dlnorm( gamm[i], tau) # Assumes y is NOT on the log scale
+      gamm[i] <- gam[ID[i]]  # gam[] is mean on log scale
+   }
+   for (i in 1:nID){ 
+      gam[i] ~ dnorm(beta1, taug) # Allow for additional coefficients
+   }
+   beta1 ~ dnorm(0, 0.25)
+   prob1 <- step(beta1)
+   sig ~ dunif(0,2)
+   tau <- 1/pow(sig,2)
+   sigg ~ dunif(0,2)
+   taug <- 1/pow(sigg,2)
+   ninety[1] <- beta1 + 1.28*sig
+   ten[1] <- beta1  - 1.28*sig
+   ninety[2] <- exp(ninety[1]) 
+   ten[2] <- exp(ten[1])
+   med <- exp(beta1)
+   rho <- (1/taug)/(1/tau + 1/taug)
+# Predict future individual
+   gamf ~ dnorm(beta1, taug)
+   logyf ~ dnorm(gamf, tau)
+ #  yf <- exp(logyf)
+   yf ~ dlnorm(gamf, tau)
+   muf <- exp(gamf)
+ }
