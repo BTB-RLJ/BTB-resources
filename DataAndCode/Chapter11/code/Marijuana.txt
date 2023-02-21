@@ -1,0 +1,13 @@
+model{
+   for (i in 1:21) {
+      n[i] ~ dbin(p[i], r[i])
+      p[i] <- phi((log(u[i]) - mu)/sigma) - phi((log(l[i]) - mu)/sigma)
+   }
+   mu ~ dnorm(0,0.001)
+   tau ~ dgamma(0.001,0.001)I(0.001,)
+   sigma <- 1/sqrt(tau)
+# Inference
+   med <- exp(mu)
+   ninetypct <- med*exp(1.28*sigma)
+   surv <- 1-phi((log(16) - mu)/sigma)
+}
