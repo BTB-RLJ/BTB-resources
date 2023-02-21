@@ -1,1 +1,8 @@
-
+model{
+  for(i in 1:n){
+     y[i] ~ dnorm(mu, tau)
+   }
+   mu ~ dnorm(mu0, tau0)
+   tau ~ dgamma(alpha0, lambda0)
+   sigma <- 1/sqrt(tau)
+}
