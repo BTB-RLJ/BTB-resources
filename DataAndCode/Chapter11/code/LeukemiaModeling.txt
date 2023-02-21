@@ -1,0 +1,18 @@
+model {
+   for (i in 1:n[1]) {
+      t1[i] ~ dexp(theta1)
+   }
+   for (i in 1:n[2]) {
+      t2[i] ~ dexp(theta2)
+   }
+   theta1 ~ dgamma(a1,b1)
+   theta2 ~ dgamma(a2,b2)
+   median1 <- log(2)/theta1
+   median2 <- log(2)/theta2
+   relmedian <- theta2/theta1
+   S[1] <- exp(-24*theta1)
+   S[2] <- exp(-24*theta2)
+   Sdiff <- S[1]-S[2]
+}
+
+
