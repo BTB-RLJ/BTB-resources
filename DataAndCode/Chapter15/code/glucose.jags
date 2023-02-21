@@ -1,9 +1,10 @@
 model {  # GENERATE THE LIKELIHOOD
    for (i in 1:n[1]) {
-      y[i] ~ dnorm(mu[1], tau[1]) }  
-      for (i in (n[1] +1):(n[1] + n[2])) {
-         y[i] ~ dnorm(mu[2], tau[2])
-      }
+      y[i] ~ dnorm(mu[1], tau[1])
+   }  
+   for (i in (n[1] +1):(n[1] + n[2])) {
+      y[i] ~ dnorm(mu[2], tau[2])
+   }
 # SPECIFY PRIORS
    mu[1] ~ dnorm( 100, 0.001)
    mu[2] ~ dnorm( 250, 0.0001)

@@ -41,7 +41,7 @@ jags_df %>%
 
 ### Now stan
 stan_fit <- stan(file = 'HIV.stan', data = data, chains = 3,
-				iter = 8000, warmup = 5000,
+				iter = (ndraws+burnin), warmup = burnin,
                 init = inits)
 
 stan_df <- ggs(stan_fit) %>%
